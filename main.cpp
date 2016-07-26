@@ -18,7 +18,7 @@ _finddata_t danePliku;
 int licz = 0;
 
 
-///*****************************************FUNCJONS*****************************
+///**********************************************************************
 
 template <typename T>  string NumberToString ( T Number ) //  int to string
 {
@@ -106,7 +106,7 @@ cout<< "Obrot"<<endl;
                 if(contourArea( contours[i],false) > 600)
                 {
                     roi =src( boundingRect(contours[i])); // set ROI
-
+cout<< ".";
                     copyMakeBorder( roi, roi, 50, 50, 50, 50,BORDER_CONSTANT, 0 );
                     rom = getRotationMatrix2D(Point( roi.cols/2., roi.rows/2. ), minEllipse[i].angle, 1.0 );
                     warpAffine(roi, roi, rom, roi.size(), cv::INTER_CUBIC);  // perform the affine transformation
@@ -161,10 +161,9 @@ cout<< "Obrot"<<endl;
                         }
 
                     }
-
-
-
                     roi_singl_big = roi( boundingRect(contours_roi[which_bigest])); // set ROI 2
+
+
 /// Get the moments
                     vector<Moments> mu(contours_roi.size() );
                     mu[which_bigest] = moments( contours_roi[which_bigest], false );
@@ -175,7 +174,6 @@ cout<< "Obrot"<<endl;
                     //circle( roi, mc[which_bigest], 4, Scalar( 255, 0, 0 ), -1, 8, 0 );
                     //imshow( "CENTER "+NumberToString(which_bigest),  roi);
                     //imshow( "CENTER2 "+NumberToString(which_bigest),  roi_singl_big);
-
 /// Detection UP / DOWN
                     cvtColor( roi_singl_big, roi_grey, CV_BGR2GRAY );
                     blur( roi_grey, roi_grey, Size(3,3) );
@@ -215,16 +213,22 @@ cout<< "Obrot"<<endl;
                     equalizeHist( roi_grey, roi_grey );
                     Sobel( roi_grey, roi_grey_sob, CV_16S, 1, 0, 3, 1, 0, BORDER_DEFAULT );
                     convertScaleAbs( roi_grey_sob, roi_grey_sob );
-                    drawContours( roi_grey_sob, contours_roi, which_bigest, (0,0,0), 1, 8, vector<Vec4i>(), 0, Point() );
+                    drawContours( roi_grey_sob, contours_roi, which_bigest, (0,0,0), 8, 8, vector<Vec4i>(), 0, Point() );
                     ///ROI AREA
-                    int roi_top_down=10, roi_left_right = 45;
+
                     threshold( roi_grey_sob, roi_grey_sob, 75, 255, THRESH_BINARY );
 
                     int valeysize = 0;
-                    int y1= roi_grey_sob.rows/2 - roi_left_right;
-                    int y2= roi_grey_sob.rows/2 + roi_left_right;
-                    int x1= roi_grey_sob.cols/2 - roi_top_down;
-                    int x2= roi_grey_sob.cols/2 + roi_top_down;
+                    int center_y = mc[which_bigest].y;
+                    int center_x = mc[which_bigest].x;
+                    int y1= roi_grey_sob.rows/2 - 45;
+                    int y2= roi_grey_sob.rows/2 + 45;
+                    int x1= roi_grey_sob.cols/2 - 10;
+                    int x2= roi_grey_sob.cols/2 + 10;
+
+                    circle( roi_singl_big, mc[which_bigest], 4, Scalar( 255, 255, 255 ), -1, 8, 0 );
+                    //cout<<center_x<<endl;
+                    //cout<<roi_grey_sob.rows/2<<endl;
 
                     for( int y=y1 ; y < y2; y++ )
                     {
@@ -297,10 +301,9 @@ cout<< "Obrot"<<endl;
 
                     //putText(drawing, NumberToString(minEllipse[i].angle), Point(minEllipse[i].center.x + minEllipse[i].size.width/4,minEllipse[i].center.y + minEllipse[i].size.height/2),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(150,150,150), 1, CV_AA);
                 }
-
-
+                else cout<<"/";
             }
-
+cout<<endl;
             /// Show in a window
             //namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
             //imshow( "Contours", drawing );
