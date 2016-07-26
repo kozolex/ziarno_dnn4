@@ -97,16 +97,14 @@ int main( int argc, char** argv )
             }
 
 /// Contours + rotated rects + ellipses
-            Mat threshold_roi;
             //Mat drawing = Mat::zeros( threshold_output.size(), CV_8UC3 );
             for( int i = 0; i< contours.size(); i++ )
             {
                 if(contourArea( contours[i],false) > 600)
                 {
                     roi =src( boundingRect(contours[i])); // set ROI
-                    threshold_roi =threshold_output( boundingRect(contours[i]));
+
                     copyMakeBorder( roi, roi, 50, 50, 50, 50,BORDER_CONSTANT, 0 );
-                    copyMakeBorder( threshold_roi, threshold_roi, 50, 50, 50, 50,BORDER_CONSTANT, 0 );
 
 
                     /*if(minRect[i].size.width > minRect[i].size.height)
@@ -124,11 +122,10 @@ int main( int argc, char** argv )
                     }*/
 
                     warpAffine(roi, roi, rom, roi.size(), cv::INTER_CUBIC);  // perform the affine transformation
-                    warpAffine(threshold_roi, threshold_roi, rom, threshold_roi.size(), cv::INTER_CUBIC);
 
 
 ///Visualisation countour
-                    /*
+/*
                     Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
                     // contour
                     drawContours( drawing, contours, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
@@ -142,28 +139,28 @@ int main( int argc, char** argv )
                     //txt
                     //putText(drawing, NumberToString(topsize), Point(minEllipse[i].center.x + minEllipse[i].size.width/4 +20, minEllipse[i].center.y + minEllipse[i].size.height/2-100),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(0,0,200), 1, CV_AA);
                     //putText(drawing, NumberToString(downsize), Point(minEllipse[i].center.x + minEllipse[i].size.width/4 +20, minEllipse[i].center.y + minEllipse[i].size.height/2-50),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(0,250,0), 1, CV_AA);
-                    */
+*/
 
 ///Show detect results
-                    /* namedWindow("morfologia",CV_WINDOW_NORMAL);
-                     resizeWindow("morfologia",threshold_output.cols/1,threshold_output.rows/1);
-                     imshow("morfologia",drawing);
-                    */
+           /* namedWindow("morfologia",CV_WINDOW_NORMAL);
+            resizeWindow("morfologia",threshold_output.cols/1,threshold_output.rows/1);
+            imshow("morfologia",drawing);
+*/
 
 //Find the biggest countours ****
-//int thresh = 60;
+int thresh = 60;
                     /// Convert image to gray and blur it
-                    // cvtColor( roi, roi_grey, CV_BGR2GRAY );
-                    //blur( roi_grey, roi_grey, Size(3,3) );
+                    cvtColor( roi, roi_grey, CV_BGR2GRAY );
+                    blur( roi_grey, roi_grey, Size(3,3) );
 
-
+                    Mat threshold_output2;
                     vector<vector<Point> > contours2;
                     vector<Vec4i> hierarchy2;
 
                     /// Detect edges using Threshold
-                    //threshold( roi_grey, threshold_roi, thresh, 255, THRESH_BINARY );
+                    threshold( roi_grey, threshold_output2, thresh, 255, THRESH_BINARY );
                     /// Find contours
-                    findContours( threshold_roi, contours2, hierarchy2, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+                    findContours( threshold_output2, contours2, hierarchy2, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
                     int bigest=0;
                     int which_bigest=0;
 
@@ -191,23 +188,23 @@ int main( int argc, char** argv )
                     cvtColor( roi2, roi_grey, CV_BGR2GRAY );
                     blur( roi_grey, roi_grey, Size(3,3) );
 
-                    threshold( roi_grey, threshold_roi, thresh, 255, THRESH_BINARY );
+                    threshold( roi_grey, threshold_output2, thresh, 255, THRESH_BINARY );
 
                     int topsize = 0;
                     int downsize = 0;
-                    for( int y = 0; y < threshold_roi.rows/4; y++ )
+                    for( int y = 0; y < threshold_output2.rows/4; y++ )
                     {
-                        for( int x = 0; x < threshold_roi.cols; x++ )
+                        for( int x = 0; x < threshold_output2.cols; x++ )
                         {
-                            if ( threshold_roi.at<uchar>(y,x) == 255 ) topsize++;
+                            if ( threshold_output2.at<uchar>(y,x) == 255 ) topsize++;
                         }
                     }
 
-                    for( int y = threshold_roi.rows - (threshold_roi.rows/4); y < threshold_roi.rows; y++ )
+                    for( int y = threshold_output2.rows - (threshold_output2.rows/4); y < threshold_output2.rows; y++ )
                     {
-                        for( int x = 0; x < threshold_roi.cols; x++ )
+                        for( int x = 0; x < threshold_output2.cols; x++ )
                         {
-                            if ( threshold_roi.at<uchar>(y,x) == 255 ) downsize++;
+                            if ( threshold_output2.at<uchar>(y,x) == 255 ) downsize++;
                         }
                     }
 
