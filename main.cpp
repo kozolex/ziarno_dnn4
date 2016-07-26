@@ -228,26 +228,32 @@ int main( int argc, char** argv )
                     Mat roi_grey_sob;
                     //Scharr( src_gray, grad_x, ddepth, 1, 0, scale, delta, BORDER_DEFAULT );
                     equalizeHist( roi_grey, roi_grey );
-                    Sobel( roi_grey, roi_grey_sob, CV_16S, 1, 0, 3, 1, 0, BORDER_DEFAULT );
+                    Sobel( roi_grey, roi_grey_sob, CV_16S, 1, 0, 3, 1, 2, BORDER_DEFAULT );
                     convertScaleAbs( roi_grey_sob, roi_grey_sob );
-                    drawContours( roi_grey_sob, contours_roi, which_bigest, (0,0,0), 8, 8, vector<Vec4i>(), 0, Point() );
+                    drawContours( roi_grey_sob, contours_roi, which_bigest, (0,0,0), 16, 8, vector<Vec4i>(), 0, Point() );
                     ///ROI AREA
 
-                    threshold( roi_grey_sob, roi_grey_sob, 75, 255, THRESH_BINARY );
+                    threshold( roi_grey_sob, roi_grey_sob, 85, 255, THRESH_BINARY );
 
                     int valeysize = 0;
                     int center_y = mc[which_bigest].y;
                     int center_x = mc[which_bigest].x;
-                    int y1= center_y - 45;
-                    int y2= center_y + 45;
+                    int y1= center_y - 55;
+                    int y2= center_y + 55;
                     int x1= center_x - 10;
                     int x2= center_x + 10;
+/// DRAWING SEGMENTS
+                    circle( roi_singl_big, mc[which_bigest], 2, Scalar( 255, 255, 255 ), -1, 8, 0 );
+                    //circle( roi_singl_big, Point2d(center_x , center_y + center_y/2), center_y/2-5, Scalar( 0,255,0 ), 2, 8, 0 );
+                    //circle( roi_singl_big, Point2d(center_x , center_y - center_y/2), center_y/2-5, Scalar( 0,0,255 ), 2, 8, 0 );
+                    ellipse(roi_singl_big, Point2d(center_x , center_y + center_y/2),Size( center_x/2+5, center_y/2-5 ), 0, 0, 360, Scalar( 0,255, 0 ), 2, 8 );
+                    ellipse(roi_singl_big, Point2d(center_x , center_y - center_y/2),Size( center_x/2+5, center_y/2-5 ), 0, 0, 360, Scalar( 0,0, 255 ), 2, 8 );
 
-                    circle( roi_singl_big, mc[which_bigest], 4, Scalar( 255, 255, 255 ), -1, 8, 0 );
 
                     //cout<<center_x<<endl;
                     //cout<<roi_grey_sob.cols/2<<endl;
 
+//HOW MANY Threshold pixels is?
                     for( int y=y1 ; y < y2; y++ )
                     {
                         for( int x= x1; x < x2; x++ )
@@ -255,8 +261,21 @@ int main( int argc, char** argv )
                             if ( roi_grey_sob.at<uchar>(y,x) == 255 ) valeysize++;
                         }
                     }
+//HOW LONG IS VALEY
+                    int valleylength, valleylength_big=0;
+                    for( int x= x1; x < x2; x++ )
+                    {
+                        valleylength = 0 ;
+                        for( int y=y1 ; y < y2; y++ )
+                        {
+                            if ( roi_grey_sob.at<uchar>(y,x) == 255 ) valleylength++;
+                        }
+                        if (valleylength>valleylength_big) valleylength_big = valleylength;
+                    }
+                    //cout<<"("<<valleylength_big<<")";
 
-                    //putText(roi_grey_sob, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
+
+                    //putText(roi_singl_big, NumberToString(valleylength_big), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
                     rectangle( roi_grey_sob,Point( x1,y1 ),Point( x2,y2),Scalar( 255, 255, 255 ), 2, 8 );
                     //imshow( "ROI TMP"+NumberToString(i),  roi_grey_sob );
 
@@ -264,11 +283,9 @@ int main( int argc, char** argv )
 ///***Valey end
 
 
-
-
-
 ///Normalize Resize
 //width //height
+
                     int diffrent_size_w, diffrent_size_h;
                     int tmp_flag = 0;
 
@@ -290,22 +307,22 @@ int main( int argc, char** argv )
 ///WRITE and SORT  DATA
                     //putText(roi_singl_big, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
                     string iplik =
-                        NumberToString ( valeysize )+"_"+NumberToString ( i );
+                        NumberToString ( valleylength_big )+"_"+NumberToString ( i );
                     //if(valeysize/roi_singl_big.cols > 3) imwrite("br" + iplik + danePliku.name, roi_singl_big );
                     if (tmp_flag ==1)
                     {
                         imwrite("grbrtmp/" + iplik + danePliku.name, roi_singl_big );                // 60 - good
-                        imwrite("grbrtmp/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
+                        //imwrite("grbrtmp/" + iplik + "_" + danePliku.name, roi_grey_sob );  // B&W
                     }
-                    else if(valeysize > 420)
+                    else if(valleylength_big > 40)
                     {
                         imwrite("br/" + iplik + danePliku.name, roi_singl_big );                // 60 - good
-                        imwrite("br/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
+                        //imwrite("br/" + iplik + "_" + danePliku.name, roi_grey_sob );  // B&W
                     }
                     else
                     {
                         imwrite("gr/" + iplik + danePliku.name, roi_singl_big );
-                        imwrite("gr/" + iplik + "1" + danePliku.name, roi_grey_sob ); //B&W
+                        //imwrite("gr/" + iplik + "_" + danePliku.name, roi_grey_sob ); //B&W
                     }
                     //namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
                     //imshow( "Contours", drawing );
