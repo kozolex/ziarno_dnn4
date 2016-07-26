@@ -64,6 +64,7 @@ int main( int argc, char** argv )
             vector<vector<Point> > contours;
             vector<Vec4i> hierarchy;
 
+cout<< "Szukanie konturow - calosc..."<<endl;
             /// Detect edges using Threshold
             threshold( src_gray, threshold_output, thresh, 255, THRESH_BINARY );
 
@@ -79,6 +80,7 @@ int main( int argc, char** argv )
             resizeWindow("morfologia",threshold_output.cols/4,threshold_output.rows/4);
             imshow("morfologia",threshold_output);*/
 
+cout<< "Elipsy"<<endl;
 
             /// Find contours
             findContours( threshold_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
@@ -96,6 +98,7 @@ int main( int argc, char** argv )
                 }
             }
 
+cout<< "Obrot"<<endl;
 /// Contours + rotated rects + ellipses
             //Mat drawing = Mat::zeros( threshold_output.size(), CV_8UC3 );
             for( int i = 0; i< contours.size(); i++ )
@@ -105,22 +108,7 @@ int main( int argc, char** argv )
                     roi =src( boundingRect(contours[i])); // set ROI
 
                     copyMakeBorder( roi, roi, 50, 50, 50, 50,BORDER_CONSTANT, 0 );
-
-
-                    /*if(minRect[i].size.width > minRect[i].size.height)
-                         int maxsize = minRect[i].size.width;
-                     else
-                         int maxsize = minRect[i].size.height;
-                    */
-
-                    //float angle = minEllipse[i].angle;
-
                     rom = getRotationMatrix2D(Point( roi.cols/2., roi.rows/2. ), minEllipse[i].angle, 1.0 );
-                    //rom = getRotationMatrix2D(minEllipse[i].center, angle, 1.0); // get the rotation matrix
-                    /*if(minRect[i].size.width > minRect[i].size.height){
-                        swap(minRect[i].size.width,minRect[i].size.height);
-                    }*/
-
                     warpAffine(roi, roi, rom, roi.size(), cv::INTER_CUBIC);  // perform the affine transformation
 
 
@@ -146,7 +134,6 @@ int main( int argc, char** argv )
             resizeWindow("morfologia",threshold_output.cols/1,threshold_output.rows/1);
             imshow("morfologia",drawing);
 */
-
 //Find the biggest countours ****
             int thresh = 60;
                     /// Convert image to gray and blur it
@@ -185,8 +172,9 @@ int main( int argc, char** argv )
 ///  Get the mass centers:
                     vector<Point2f> mc( contours_roi.size() );
                     mc[which_bigest] = Point2f( mu[which_bigest].m10/mu[which_bigest].m00, mu[which_bigest].m01/mu[which_bigest].m00 );
-                    circle( roi, mc[which_bigest], 4, Scalar( 255, 255, 255 ), -1, 8, 0 );
+                    //circle( roi, mc[which_bigest], 4, Scalar( 255, 0, 0 ), -1, 8, 0 );
                     //imshow( "CENTER "+NumberToString(which_bigest),  roi);
+                    //imshow( "CENTER2 "+NumberToString(which_bigest),  roi_singl_big);
 
 /// Detection UP / DOWN
                     cvtColor( roi_singl_big, roi_grey, CV_BGR2GRAY );
@@ -233,22 +221,21 @@ int main( int argc, char** argv )
                     threshold( roi_grey_sob, roi_grey_sob, 75, 255, THRESH_BINARY );
 
                     int valeysize = 0;
+                    int y1= roi_grey_sob.rows/2 - roi_left_right;
+                    int y2= roi_grey_sob.rows/2 + roi_left_right;
+                    int x1= roi_grey_sob.cols/2 - roi_top_down;
+                    int x2= roi_grey_sob.cols/2 + roi_top_down;
 
-                    for( int y = roi_grey_sob.rows/2-roi_left_right; y < roi_grey_sob.rows/2+roi_left_right+20; y++ )
+                    for( int y=y1 ; y < y2; y++ )
                     {
-                        for( int x = roi_grey_sob.cols/2-roi_top_down; x < roi_grey_sob.cols/2+roi_top_down; x++ )
+                        for( int x= x1; x < x2; x++ )
                         {
                             if ( roi_grey_sob.at<uchar>(y,x) == 255 ) valeysize++;
                         }
                     }
 
                     //putText(roi_grey_sob, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
-                    rectangle( roi_grey_sob,
-                               Point( roi_grey_sob.cols/2-roi_top_down,
-                                      roi_grey_sob.rows/2-roi_left_right+20 ),
-                               Point( roi_grey_sob.cols/2+roi_top_down,
-                                      roi_grey_sob.rows/2+roi_left_right),
-                               Scalar( 255, 255, 255 ), 2, 8 );
+                    rectangle( roi_grey_sob,Point( x1,y1 ),Point( x2,y2),Scalar( 255, 255, 255 ), 2, 8 );
                     //imshow( "ROI TMP"+NumberToString(i),  roi_grey_sob );
 
 
