@@ -243,12 +243,15 @@ int main( int argc, char** argv )
                     int x1= center_x - 10;
                     int x2= center_x + 10;
 /// DRAWING SEGMENTS
+/*
                     circle( roi_singl_big, mc[which_bigest], 2, Scalar( 255, 255, 255 ), -1, 8, 0 );
                     //circle( roi_singl_big, Point2d(center_x , center_y + center_y/2), center_y/2-5, Scalar( 0,255,0 ), 2, 8, 0 );
                     //circle( roi_singl_big, Point2d(center_x , center_y - center_y/2), center_y/2-5, Scalar( 0,0,255 ), 2, 8, 0 );
-                    ellipse(roi_singl_big, Point2d(center_x , center_y + center_y/2),Size( center_x/2+5, center_y/2-5 ), 0, 0, 360, Scalar( 0,255, 0 ), 2, 8 );
-                    ellipse(roi_singl_big, Point2d(center_x , center_y - center_y/2),Size( center_x/2+5, center_y/2-5 ), 0, 0, 360, Scalar( 0,0, 255 ), 2, 8 );
-
+                    ellipse(roi_singl_big, Point2d(center_x , center_y + center_y/2),Size( center_x/2+5, center_y/2-5 ), 0, 0, 360, Scalar( 0,255, 0 ), 1, 8 );
+                    ellipse(roi_singl_big, Point2d(center_x , center_y - center_y/2),Size( center_x/2+5, center_y/2-5 ), 0, 0, 360, Scalar( 0,0, 255 ), 1, 8 );
+                    //putText(roi_singl_big, NumberToString(valleylength_big), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
+                    rectangle( roi_singl_big,Point( x1,y1 ),Point( x2,y2),Scalar( 255, 0, 0 ), 1, 8 );
+*/
 
                     //cout<<center_x<<endl;
                     //cout<<roi_grey_sob.cols/2<<endl;
@@ -275,8 +278,7 @@ int main( int argc, char** argv )
                     //cout<<"("<<valleylength_big<<")";
 
 
-                    //putText(roi_singl_big, NumberToString(valleylength_big), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
-                    rectangle( roi_grey_sob,Point( x1,y1 ),Point( x2,y2),Scalar( 255, 255, 255 ), 2, 8 );
+
                     //imshow( "ROI TMP"+NumberToString(i),  roi_grey_sob );
 
 
