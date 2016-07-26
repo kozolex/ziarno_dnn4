@@ -10,7 +10,7 @@ using namespace std;
 
 Mat src;
 Mat src_gray;
-Mat roi,rom,roi_grey,roi2;
+Mat roi,rom,roi_grey,roi_single_big;
 int thresh = 60;
 int max_thresh = 255;
 RNG rng(12345);
@@ -173,10 +173,11 @@ int main( int argc, char** argv )
                         {
                             bigest = contourArea( contours2[j],false);
                             which_bigest = j;
-                            roi2 = roi( boundingRect(contours2[j])); // set ROI 2
                         }
 
                     }
+                    roi_single_big = roi( boundingRect(contours2[which_bigest])); // set ROI 2
+                    threshold_roi = threshold_roi( boundingRect(contours2[which_bigest])); // set ROI 2
 /// Get the moments
                     vector<Moments> mu(contours2.size() );
                     mu[which_bigest] = moments( contours2[which_bigest], false );
@@ -188,10 +189,10 @@ int main( int argc, char** argv )
                     //imshow( "CENTER "+NumberToString(which_bigest),  roi);
 
 /// Detection UP / DOWN
-                    cvtColor( roi2, roi_grey, CV_BGR2GRAY );
-                    blur( roi_grey, roi_grey, Size(3,3) );
+                    //cvtColor( roi_single_big, roi_grey, CV_BGR2GRAY );
+                   // blur( roi_grey, roi_grey, Size(3,3) );
 
-                    threshold( roi_grey, threshold_roi, thresh, 255, THRESH_BINARY );
+                   // threshold( roi_grey, threshold_roi, thresh, 255, THRESH_BINARY );
 
                     int topsize = 0;
                     int downsize = 0;
@@ -214,7 +215,7 @@ int main( int argc, char** argv )
                     if (downsize<topsize)
 
                     {
-                        flip(roi2,roi2,0); // FLIP if needed
+                        flip(roi_single_big,roi_single_big,0); // FLIP if needed
                         flip(roi_grey,roi_grey,0);
                     }
 
@@ -261,39 +262,39 @@ int main( int argc, char** argv )
                     int diffrent_size_w, diffrent_size_h;
                     int tmp_flag = 0;
 
-                    if (roi2.cols <= 80 && roi2.rows <= 170)
+                    if (roi_single_big.cols <= 80 && roi_single_big.rows <= 170)
                     {
-                        diffrent_size_w = 80-roi2.cols;
-                        diffrent_size_h = 170-roi2.rows;
+                        diffrent_size_w = 80-roi_single_big.cols;
+                        diffrent_size_h = 170-roi_single_big.rows;
                         if (diffrent_size_w%2 == 0 && diffrent_size_h%2 == 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_single_big, roi_single_big, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
                         else if (diffrent_size_w%2 != 0 && diffrent_size_h%2 != 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_single_big, roi_single_big, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
                         else if (diffrent_size_w%2 != 0 && diffrent_size_h%2 == 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_single_big, roi_single_big, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
                         else if (diffrent_size_w%2 == 0 && diffrent_size_h%2 != 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_single_big, roi_single_big, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
                     }
-                    else if (roi2.cols > 80 || roi2.rows > 170) tmp_flag = 1;
+                    else if (roi_single_big.cols > 80 || roi_single_big.rows > 170) tmp_flag = 1;
 
 ///WRITE and SORT  DATA
-                    //putText(roi2, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
+                    //putText(roi_single_big, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
                     string iplik =
                         NumberToString ( valeysize )+"_"+NumberToString ( i );
-                    //if(valeysize/roi2.cols > 3) imwrite("br" + iplik + danePliku.name, roi2 );
+                    //if(valeysize/roi_single_big.cols > 3) imwrite("br" + iplik + danePliku.name, roi_single_big );
                     if (tmp_flag ==1)
                     {
-                        imwrite("grbrtmp/" + iplik + danePliku.name, roi2 );                // 60 - good
+                        imwrite("grbrtmp/" + iplik + danePliku.name, roi_single_big );                // 60 - good
                         //imwrite("br/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
                     }
                     else if(valeysize > 420)
                     {
-                        imwrite("br/" + iplik + danePliku.name, roi2 );                // 60 - good
+                        imwrite("br/" + iplik + danePliku.name, roi_single_big );                // 60 - good
                         //imwrite("br/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
                     }
                     else
                     {
-                        imwrite("gr/" + iplik + danePliku.name, roi2 );
+                        imwrite("gr/" + iplik + danePliku.name, roi_single_big );
                         //imwrite("gr/" + iplik + "1" + danePliku.name, roi_grey_sob ); //B&W
                     }
                     //namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
@@ -304,7 +305,7 @@ int main( int argc, char** argv )
 
 ///Open small windows with roi obiects
                     //namedWindow( "roi_"+NumberToString(i), CV_WINDOW_AUTOSIZE );
-                    //imshow( "roi_"+NumberToString(i), roi2 );
+                    //imshow( "roi_"+NumberToString(i), roi_single_big );
 
                     //putText(drawing, NumberToString(minEllipse[i].angle), Point(minEllipse[i].center.x + minEllipse[i].size.width/4,minEllipse[i].center.y + minEllipse[i].size.height/2),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(150,150,150), 1, CV_AA);
                 }
