@@ -1,0 +1,9 @@
+src - źródło
+src_grey - orginal 256 odcieni
+threshold_output - po progowaniu - do szukania konturu
+drawing - po progowaniu - rysowanie
+roi - wycięte z oryginalu 1 ziarno
+rom - do obrotu
+roi - obrócone
+
+
