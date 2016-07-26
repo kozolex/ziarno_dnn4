@@ -10,7 +10,7 @@ using namespace std;
 
 Mat src;
 Mat src_gray;
-Mat roi,rom,roi_grey,roi2;
+Mat roi,rom,roi_grey,roi_singl_big;
 int thresh = 60;
 int max_thresh = 255;
 RNG rng(12345);
@@ -148,70 +148,74 @@ int main( int argc, char** argv )
 */
 
 //Find the biggest countours ****
-int thresh = 60;
+            int thresh = 60;
                     /// Convert image to gray and blur it
                     cvtColor( roi, roi_grey, CV_BGR2GRAY );
                     blur( roi_grey, roi_grey, Size(3,3) );
 
-                    Mat threshold_output2;
-                    vector<vector<Point> > contours2;
-                    vector<Vec4i> hierarchy2;
+                    Mat threshold_roi;
+                    vector<vector<Point> > contours_roi;
+                    vector<Vec4i> hierarchy_roi;
 
                     /// Detect edges using Threshold
-                    threshold( roi_grey, threshold_output2, thresh, 255, THRESH_BINARY );
+                    threshold( roi_grey, threshold_roi, thresh, 255, THRESH_BINARY );
                     /// Find contours
-                    findContours( threshold_output2, contours2, hierarchy2, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+                    findContours( threshold_roi, contours_roi, hierarchy_roi, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
                     int bigest=0;
                     int which_bigest=0;
 
-                    for( int j = 0; j< contours2.size(); j++ )
+                    for( int j = 0; j< contours_roi.size(); j++ )
                     {
-                        if(contourArea( contours2[j],false) > bigest)
+                        if(contourArea( contours_roi[j],false) > bigest)
                         {
-                            bigest = contourArea( contours2[j],false);
+                            bigest = contourArea( contours_roi[j],false);
                             which_bigest = j;
-                            roi2 = roi( boundingRect(contours2[j])); // set ROI 2
+
                         }
 
                     }
+
+
+
+                    roi_singl_big = roi( boundingRect(contours_roi[which_bigest])); // set ROI 2
 /// Get the moments
-                    vector<Moments> mu(contours2.size() );
-                    mu[which_bigest] = moments( contours2[which_bigest], false );
+                    vector<Moments> mu(contours_roi.size() );
+                    mu[which_bigest] = moments( contours_roi[which_bigest], false );
 
 ///  Get the mass centers:
-                    vector<Point2f> mc( contours2.size() );
+                    vector<Point2f> mc( contours_roi.size() );
                     mc[which_bigest] = Point2f( mu[which_bigest].m10/mu[which_bigest].m00, mu[which_bigest].m01/mu[which_bigest].m00 );
                     circle( roi, mc[which_bigest], 4, Scalar( 255, 255, 255 ), -1, 8, 0 );
                     //imshow( "CENTER "+NumberToString(which_bigest),  roi);
 
 /// Detection UP / DOWN
-                    cvtColor( roi2, roi_grey, CV_BGR2GRAY );
+                    cvtColor( roi_singl_big, roi_grey, CV_BGR2GRAY );
                     blur( roi_grey, roi_grey, Size(3,3) );
 
-                    threshold( roi_grey, threshold_output2, thresh, 255, THRESH_BINARY );
+                    threshold( roi_grey, threshold_roi, thresh, 255, THRESH_BINARY );
 
                     int topsize = 0;
                     int downsize = 0;
-                    for( int y = 0; y < threshold_output2.rows/4; y++ )
+                    for( int y = 0; y < threshold_roi.rows/4; y++ )
                     {
-                        for( int x = 0; x < threshold_output2.cols; x++ )
+                        for( int x = 0; x < threshold_roi.cols; x++ )
                         {
-                            if ( threshold_output2.at<uchar>(y,x) == 255 ) topsize++;
+                            if ( threshold_roi.at<uchar>(y,x) == 255 ) topsize++;
                         }
                     }
 
-                    for( int y = threshold_output2.rows - (threshold_output2.rows/4); y < threshold_output2.rows; y++ )
+                    for( int y = threshold_roi.rows - (threshold_roi.rows/4); y < threshold_roi.rows; y++ )
                     {
-                        for( int x = 0; x < threshold_output2.cols; x++ )
+                        for( int x = 0; x < threshold_roi.cols; x++ )
                         {
-                            if ( threshold_output2.at<uchar>(y,x) == 255 ) downsize++;
+                            if ( threshold_roi.at<uchar>(y,x) == 255 ) downsize++;
                         }
                     }
 
                     if (downsize<topsize)
 
                     {
-                        flip(roi2,roi2,0); // FLIP if needed
+                        flip(roi_singl_big,roi_singl_big,0); // FLIP if needed
                         flip(roi_grey,roi_grey,0);
                     }
 
@@ -223,6 +227,7 @@ int thresh = 60;
                     equalizeHist( roi_grey, roi_grey );
                     Sobel( roi_grey, roi_grey_sob, CV_16S, 1, 0, 3, 1, 0, BORDER_DEFAULT );
                     convertScaleAbs( roi_grey_sob, roi_grey_sob );
+                    drawContours( roi_grey_sob, contours_roi, which_bigest, (0,0,0), 1, 8, vector<Vec4i>(), 0, Point() );
                     ///ROI AREA
                     int roi_top_down=10, roi_left_right = 45;
                     threshold( roi_grey_sob, roi_grey_sob, 75, 255, THRESH_BINARY );
@@ -258,40 +263,40 @@ int thresh = 60;
                     int diffrent_size_w, diffrent_size_h;
                     int tmp_flag = 0;
 
-                    if (roi2.cols <= 80 && roi2.rows <= 170)
+                    if (roi_singl_big.cols <= 80 && roi_singl_big.rows <= 170)
                     {
-                        diffrent_size_w = 80-roi2.cols;
-                        diffrent_size_h = 170-roi2.rows;
+                        diffrent_size_w = 80-roi_singl_big.cols;
+                        diffrent_size_h = 170-roi_singl_big.rows;
                         if (diffrent_size_w%2 == 0 && diffrent_size_h%2 == 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_singl_big, roi_singl_big, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
                         else if (diffrent_size_w%2 != 0 && diffrent_size_h%2 != 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_singl_big, roi_singl_big, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
                         else if (diffrent_size_w%2 != 0 && diffrent_size_h%2 == 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_singl_big, roi_singl_big, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2 + 1, diffrent_size_w/2,BORDER_CONSTANT,0);
                         else if (diffrent_size_w%2 == 0 && diffrent_size_h%2 != 0)
-                            copyMakeBorder( roi2, roi2, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
+                            copyMakeBorder( roi_singl_big, roi_singl_big, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
                     }
-                    else if (roi2.cols > 80 || roi2.rows > 170) tmp_flag = 1;
+                    else if (roi_singl_big.cols > 80 || roi_singl_big.rows > 170) tmp_flag = 1;
 
 ///WRITE and SORT  DATA
-                    //putText(roi2, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
+                    //putText(roi_singl_big, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);
                     string iplik =
                         NumberToString ( valeysize )+"_"+NumberToString ( i );
-                    //if(valeysize/roi2.cols > 3) imwrite("br" + iplik + danePliku.name, roi2 );
+                    //if(valeysize/roi_singl_big.cols > 3) imwrite("br" + iplik + danePliku.name, roi_singl_big );
                     if (tmp_flag ==1)
                     {
-                        imwrite("grbrtmp/" + iplik + danePliku.name, roi2 );                // 60 - good
-                        //imwrite("br/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
+                        imwrite("grbrtmp/" + iplik + danePliku.name, roi_singl_big );                // 60 - good
+                        imwrite("grbrtmp/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
                     }
                     else if(valeysize > 420)
                     {
-                        imwrite("br/" + iplik + danePliku.name, roi2 );                // 60 - good
-                        //imwrite("br/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
+                        imwrite("br/" + iplik + danePliku.name, roi_singl_big );                // 60 - good
+                        imwrite("br/" + iplik + "1" + danePliku.name, roi_grey_sob );  // B&W
                     }
                     else
                     {
-                        imwrite("gr/" + iplik + danePliku.name, roi2 );
-                        //imwrite("gr/" + iplik + "1" + danePliku.name, roi_grey_sob ); //B&W
+                        imwrite("gr/" + iplik + danePliku.name, roi_singl_big );
+                        imwrite("gr/" + iplik + "1" + danePliku.name, roi_grey_sob ); //B&W
                     }
                     //namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
                     //imshow( "Contours", drawing );
@@ -301,7 +306,7 @@ int thresh = 60;
 
 ///Open small windows with roi obiects
                     //namedWindow( "roi_"+NumberToString(i), CV_WINDOW_AUTOSIZE );
-                    //imshow( "roi_"+NumberToString(i), roi2 );
+                    //imshow( "roi_"+NumberToString(i), roi_singl_big );
 
                     //putText(drawing, NumberToString(minEllipse[i].angle), Point(minEllipse[i].center.x + minEllipse[i].size.width/4,minEllipse[i].center.y + minEllipse[i].size.height/2),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(150,150,150), 1, CV_AA);
                 }
