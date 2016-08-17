@@ -255,7 +255,7 @@ int main( int argc, char** argv )
 
                     //cout<<center_x<<endl;
                     //cout<<roi_grey_sob.cols/2<<endl;
-
+//
 //HOW MANY Threshold pixels is?
                     for( int y=y1 ; y < y2; y++ )
                     {
