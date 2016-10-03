@@ -8,10 +8,16 @@
 using namespace cv;
 using namespace std;
 
+int grain_area = 15000;                     //How big is grain (500)
+int min_grain_area = 75;                    //Min area of countoure (75)
+int image_width = 270, image_height = 600;  // 80 x 170
+int borderRotate = 100;                     // 50
+int thresh = 30;                            // 75
+
 Mat src;
 Mat src_gray;
 Mat roi,rom,roi_grey,roi_singl_big;
-int thresh = 60;
+
 int max_thresh = 255;
 RNG rng(12345);
 _finddata_t danePliku;
@@ -92,7 +98,7 @@ int main( int argc, char** argv )
             for( int i = 0; i < contours.size(); i++ )
             {
                 minRect[i] = minAreaRect( Mat(contours[i]) );
-                if( contours[i].size() > 75 )
+                if( contours[i].size() > min_grain_area )
                 {
                     minEllipse[i] = fitEllipse( Mat(contours[i]) );
                 }
@@ -103,11 +109,11 @@ int main( int argc, char** argv )
             //Mat drawing = Mat::zeros( threshold_output.size(), CV_8UC3 );
             for( int i = 0; i< contours.size(); i++ )
             {
-                if(contourArea( contours[i],false) > 600)
+                if(contourArea( contours[i],false) > grain_area)
                 {
                     roi =src( boundingRect(contours[i])); // set ROI
                     cout<< ".";
-                    copyMakeBorder( roi, roi, 50, 50, 50, 50,BORDER_CONSTANT, 0 );
+                    copyMakeBorder( roi, roi, borderRotate, borderRotate, borderRotate, borderRotate,BORDER_CONSTANT, 0 );
                     rom = getRotationMatrix2D(Point( roi.cols/2., roi.rows/2. ), minEllipse[i].angle, 1.0 );
                     warpAffine(roi, roi, rom, roi.size(), cv::INTER_CUBIC);  // perform the affine transformation
 
@@ -135,7 +141,7 @@ int main( int argc, char** argv )
                      imshow("morfologia",drawing);
                     */
 //Find the biggest countours ****
-                    int thresh = 60;
+                    //int thresh = 60;
                     /// Convert image to gray and blur it
                     cvtColor( roi, roi_grey, CV_BGR2GRAY );
                     blur( roi_grey, roi_grey, Size(3,3) );
@@ -243,7 +249,7 @@ int main( int argc, char** argv )
                     int x1= center_x - 10;
                     int x2= center_x + 10;
 /// DRAWING SEGMENTS
-                    circle( roi_singl_big, mc[which_bigest], 2, Scalar( 255, 255, 255 ), -1, 8, 0 );
+ /*                  circle( roi_singl_big, mc[which_bigest], 2, Scalar( 255, 255, 255 ), -1, 8, 0 );
                     //circle( roi_singl_big, Point2d(center_x , center_y + center_y/2), center_y/2-5, Scalar( 0,255,0 ), 2, 8, 0 );
                     //circle( roi_singl_big, Point2d(center_x , center_y - center_y/2), center_y/2-5, Scalar( 0,0,255 ), 2, 8, 0 );
                     ellipse(roi_singl_big, Point2d(center_x , center_y + center_y/2),Size( center_x/2+5, center_y/2-5 ), 0, 0, 360, Scalar( 0,255, 0 ), 2, 8 );
@@ -252,7 +258,7 @@ int main( int argc, char** argv )
 
                     //cout<<center_x<<endl;
                     //cout<<roi_grey_sob.cols/2<<endl;
-
+*/
 //HOW MANY Threshold pixels is?
                     for( int y=y1 ; y < y2; y++ )
                     {
@@ -289,10 +295,10 @@ int main( int argc, char** argv )
                     int diffrent_size_w, diffrent_size_h;
                     int tmp_flag = 0;
 
-                    if (roi_singl_big.cols <= 80 && roi_singl_big.rows <= 170)
+                    if (roi_singl_big.cols <= image_width && roi_singl_big.rows <= image_height)
                     {
-                        diffrent_size_w = 80-roi_singl_big.cols;
-                        diffrent_size_h = 170-roi_singl_big.rows;
+                        diffrent_size_w = image_width-roi_singl_big.cols;
+                        diffrent_size_h = image_height-roi_singl_big.rows;
                         if (diffrent_size_w%2 == 0 && diffrent_size_h%2 == 0)
                             copyMakeBorder( roi_singl_big, roi_singl_big, diffrent_size_h/2,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
                         else if (diffrent_size_w%2 != 0 && diffrent_size_h%2 != 0)
@@ -302,7 +308,7 @@ int main( int argc, char** argv )
                         else if (diffrent_size_w%2 == 0 && diffrent_size_h%2 != 0)
                             copyMakeBorder( roi_singl_big, roi_singl_big, diffrent_size_h/2+1,diffrent_size_h/2, diffrent_size_w/2, diffrent_size_w/2,BORDER_CONSTANT,0);
                     }
-                    else if (roi_singl_big.cols > 80 || roi_singl_big.rows > 170) tmp_flag = 1;
+                    else if (roi_singl_big.cols > image_width || roi_singl_big.rows > image_height) tmp_flag = 1;
 
 ///WRITE and SORT  DATA
                     //putText(roi_singl_big, NumberToString(valeysize), Point(0, 10),FONT_HERSHEY_DUPLEX, 0.4, cvScalar(255,255,255), 1, CV_AA);

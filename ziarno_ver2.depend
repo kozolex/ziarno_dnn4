@@ -23,3 +23,9 @@
 	<iostream>
 	<io.h>
 
+1470393140 source:c:\users\dell1\documents\github\ziarno_dnn4\main.cpp
+	"opencv2/highgui/highgui.hpp"
+	"opencv2/imgproc/imgproc.hpp"
+	<iostream>
+	<io.h>
+
